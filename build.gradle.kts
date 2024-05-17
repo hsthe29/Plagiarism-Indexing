@@ -31,6 +31,8 @@ repositories {
 
 dependencies {
     // check the latest release tag for the latest version
+    implementation(files("jars/VnCoreNLP-1.2.jar"))
+    implementation("org.apache.pdfbox:pdfbox:3.0.2")
     implementation("com.jillesvangurp:search-client:2.1.29")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
