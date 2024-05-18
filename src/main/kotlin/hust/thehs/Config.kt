@@ -14,3 +14,14 @@ const val MAX_CHARACTER_COUNT = 100_000
 
 
 /* ------------------------------------------------------------------------------------ */
+
+/* ------------------------------ Text Extractor config ------------------------------- */
+const val MARGIN_TOP = 2.0
+const val MARGIN_BOTTOM = 2.0
+const val MARGIN_LEFT = 1.0
+const val MARGIN_RIGHT = 1.0
+
+const val ROOT_DATA_DIRECTORY = "D:\\CoopyData"
+
+
+/* ------------------------------------------------------------------------------------ */
