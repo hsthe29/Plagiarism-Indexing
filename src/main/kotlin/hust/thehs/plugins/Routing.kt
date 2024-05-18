@@ -23,7 +23,7 @@ fun Application.configureRouting() {
 
     routing {
         get("/") {
-            call.respondText("Plagiarism Indexing Server")
+            call.respondText("""{"name": "Plagiarism Indexing Server", "version": "1.0.0"}""")
         }
 
         post("/search") {
