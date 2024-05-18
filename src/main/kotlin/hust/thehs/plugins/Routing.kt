@@ -2,8 +2,6 @@ package hust.thehs.plugins
 
 import com.jillesvangurp.ktsearch.deleteDocument
 import com.jillesvangurp.ktsearch.search
-import com.jillesvangurp.searchdsls.querydsl.bool
-import com.jillesvangurp.searchdsls.querydsl.match
 import com.jillesvangurp.searchdsls.querydsl.matchPhrase
 import hust.thehs.*
 import hust.thehs.plugins.extractor.extract
@@ -16,7 +14,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.time.Duration.Companion.seconds
 
 
 fun Application.configureRouting() {
