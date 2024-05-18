@@ -1,12 +1,36 @@
 # Plagiarism Indexing
 
-Ktor + ElasticSearch
+### Author: Sy The Ho - @hsthe29
 
-REST API:
+<hr>
+
+## Framework
+
+1. Ktor
+2. Elasticsearch
+
+## REST API:
 - GET: 
-  - /search
-  - /delete
+  - /: Server Information
+
 - POST:
   - /index
-
-### Author: Sy The Ho - @hsthe29
+    ```json
+    {
+        "directory_path": "D:\\CoopyData\\Test",
+        "extract": false,
+        "university_id": 1,
+        "category": 1,
+        "private": true,
+        "language": "vi",
+        "type": 0
+    }
+  - /search
+    ```json
+    {
+        "num_files": 2,
+        "keywords": [
+            "transformer", "cnn", "huấn luyện", "encoder", "giám sát", "mô hình", "học sâu", "dáng người"
+        ],
+        "language": "vi"
+    }
