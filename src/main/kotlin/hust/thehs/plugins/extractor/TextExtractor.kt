@@ -10,17 +10,13 @@ import vn.pipeline.Annotation
 import vn.pipeline.VnCoreNLP
 import java.awt.geom.Rectangle2D
 import java.io.File
-import java.io.PrintWriter
-import java.net.URL
-import java.util.*
 
 
-private val REGEX_BODY = """<body>(.*?)</body>""".toRegex(RegexOption.DOT_MATCHES_ALL)
-private val REGEX_DIV = """<div class="(.*?)">(.*?)</div>""".toRegex(RegexOption.DOT_MATCHES_ALL)
-private val REGEX_P = """<p>(.*?)</p>""".toRegex(RegexOption.DOT_MATCHES_ALL)
-val regexTextRemove: Array<String> = arrayOf(
-    "Sinh\\s+viên\\s+thực\\s+hiện[\\s\\S]+?\\n"
-)
+@OptIn(ExperimentalSerializationApi::class)
+private val PrettyJson = Json {
+    prettyPrint = true
+    prettyPrintIndent = "  "
+}
 
 class TextExtractor(
     top: CM = 0.0.cm,
@@ -53,19 +49,11 @@ class TextExtractor(
         "XIII", "XIV", "XV"
     )
 
-    //    final static String regexExtra = "\\s+([" + vnUpper + " ]|)(HẠN CHẾ|HƯỚNG PHÁT TRIỂN|TÀI LIỆU THAM KHẢO|" +
-    //            "Tài liệu tham khảo)";
     private val regexExtra = """\s+(Danh mục tài liệu tham khảo|DANH MỤC TÀI LIỆU THAM KHẢO|Tài liệu tham khảo|TÀI LIỆU THAM KHẢO)([^\S\n]*)\n"""
 
     private val regexSplitSentences = """([.!?]\s)|(\n{2,})|(:\s*\n)"""
 
     private lateinit var mainContentIndices: Pair<Int, Int>
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val PrettyJson = Json {
-        prettyPrint = true
-        prettyPrintIndent = "  "
-    }
 
     init {
         val width = A4_DPI_WIDTH.value - right.toDpiSize.value - left.toDpiSize.value
@@ -104,29 +92,21 @@ class TextExtractor(
 
     private fun findMainContent(text: String): String {
         var startIndex = indexPreamble(text, regexPreface)
-//        println("Preface: $startIndex")
         if (startIndex == -1)
             startIndex = indexPreamble(text, regexChapter(1))
-//        println("Chapter(1): $startIndex")
         if (startIndex == -1) startIndex =
             indexPreamble(text, regexAbbreviation)
-//        println("Abbreviation: $startIndex")
         if (startIndex == -1) startIndex =
             indexPreamble(text, regexListOfTables)
-//        println("ListOfTables: $startIndex")
         if (startIndex == -1) startIndex =
             indexPreamble(text, regexListOfFigures)
-//        println("ListOfFigures: $startIndex")
         if (startIndex == -1) startIndex =
             indexPreamble(text, regexThanks)
-//        println("Thanks: $startIndex")
         if (startIndex == -1) startIndex =
             indexPreamble(text, regexAbstract)
-//        println("Abstract: $startIndex")
         if (startIndex == -1) startIndex = 0
 
         val endIndex = indexEndPart(text, regexExtra)
-
         mainContentIndices = startIndex to endIndex
 
         return text.substring(startIndex, endIndex)
@@ -226,6 +206,7 @@ private fun extractFolder(extractor: TextExtractor, directoryPath: String) {
 }
 
 fun extract(directoryPath: String) {
+    println("Extracting...")
     require(
         isInDirectory(
             ROOT_DATA_DIRECTORY,
