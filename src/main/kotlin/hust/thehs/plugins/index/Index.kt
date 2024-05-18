@@ -1,20 +1,12 @@
-package hust.thehs
+package hust.thehs.plugins.index
 
 import com.jillesvangurp.ktsearch.*
-import com.jillesvangurp.searchdsls.querydsl.matchPhrase
+import com.jillesvangurp.searchdsls.querydsl.term
+import hust.thehs.*
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.Date
 
-private fun listDir(directoryPath: String): Pair<List <String>, List <String>> {
-    val directory = File(directoryPath)
-    assert(directory.isDirectory) { "Require Directory but found File instead!" }
-
-    val subItems = directory.listFiles()
-    val files = subItems?.filter { it.isFile }?.map{ it.path } ?: listOf()
-    val subDirs = subItems?.filter { it.isDirectory }?.map { it.path } ?: listOf()
-    return subDirs to files
-}
 
 suspend fun indexDocument(client: SearchClient,
                           data: DocumentData,
@@ -23,21 +15,26 @@ suspend fun indexDocument(client: SearchClient,
                           category: Int,
                           url: String,
                           private: Boolean,
-                          language: Language,
-                          type: DocumentType
+                          language: String,
+                          type: Int
 ) {
 
     val indexName = DEFAULT_INDEX_NAME
     val res = client.search(indexName) {
-        query = matchPhrase("file_path", filePath)
+        query = term("file_path", filePath)
     }
 
-    val recordId  = res.hits?.hits?.first()?.id
+    val recordId = if (res.hits!!.total!!.value > 0)
+        res.hits?.hits?.first()?.id
+    else
+        null
 
+    val analyzeText = data.sentences.joinToString("\n")
     val documentIndex = DocumentIndex(
         filePath = filePath,
         universityId = universityId,
         category = category,
+        text = analyzeText,
         data = data,
         uploadTime = Date().time,
         url = url,
@@ -51,7 +48,8 @@ suspend fun indexDocument(client: SearchClient,
             id = recordId, doc = documentIndex, refresh = Refresh.True)
     }
     else {
-        client.indexDocument(indexName, document = documentIndex, opType = OperationType.Create, refresh = Refresh.True)
+        val newId = filePath.split(File.separator).last().dropLast(4)
+        client.indexDocument(indexName, document = documentIndex, id = newId, opType = OperationType.Create, refresh = Refresh.True)
     }
 }
 
@@ -60,6 +58,7 @@ suspend fun indexFolder(client: SearchClient, directoryPath: String, indexConfig
     println("Indexing folder $directoryPath")
     for(file in files) {
         if (file.endsWith(".json")) {
+            println("Indexing file: $file")
             val jsonString = File(file).readText(Charsets.UTF_8)
 
             val data = Json.decodeFromString<DocumentData>(jsonString)
@@ -70,18 +69,10 @@ suspend fun indexFolder(client: SearchClient, directoryPath: String, indexConfig
                 filePath=file,
                 universityId=indexConfig.universityId,
                 category=indexConfig.category,
-                url=indexConfig.url,
+                url=data.url,
                 private=indexConfig.private,
-                language=when (indexConfig.language){
-                    "vi" -> Language.VI
-                    "en" -> Language.EN
-                    else -> throw Exception("Not found language ${indexConfig.language}")},
-                type=when (indexConfig.type){
-                    0 -> DocumentType.THESIS
-                    1 -> DocumentType.PAPER
-                    2 -> DocumentType.INTERNET
-                    3 -> DocumentType.PROPOSAL
-                    else -> throw Exception("Not found document type ${indexConfig.type}")}
+                language=indexConfig.language,
+                type=indexConfig.type
             )
         }
     }
@@ -90,12 +81,7 @@ suspend fun indexFolder(client: SearchClient, directoryPath: String, indexConfig
     }
 }
 
-suspend fun index(directoryPath: String) {
+suspend fun index(directoryPath: String, config: IndexConfig) {
     val client = getClient()
-    indexFolder(client, directoryPath, IndexConfig(0, 0, "", true, "vi", 0))
-}
-
-
-suspend fun main() {
-    index("")
+    indexFolder(client, directoryPath, config)
 }
