@@ -21,7 +21,8 @@ enum class DocumentType(val type: Int) {
 
 @Serializable
 data class DocumentData(
-    val text: String
+    val url: String = "/",
+    val sentences: List<Sentence>
 )
 
 @Serializable
@@ -29,21 +30,34 @@ data class DocumentIndex(
     @SerialName("file_path") val filePath: String,
     @SerialName("university_id") val universityId: Int,
     val category: Int,
+    val text: String,
     val data: DocumentData,
     @SerialName("upload_time") val uploadTime: Long,
     val url: String,
     val private: Boolean,
-    val language: Language,
-    val type: DocumentType
+    val language: String,
+    val type: Int
 )
 
+@Serializable
 data class IndexConfig(
+    @SerialName("directory_path")
+    val directoryPath: String,
+    val extract: Boolean,
+    @SerialName("university_id")
     val universityId: Int,
     val category: Int,
-    val url: String,
     val private: Boolean,
     val language: String,
     val type: Int
+)
+
+@Serializable
+data class SearchConfig(
+    @SerialName("num_files")
+    val numFiles: Int = 0,
+    val keywords: List<String> = listOf(),
+    val language: String = ""
 )
 
 @Serializable
@@ -66,3 +80,13 @@ data class RespondJson(
     val hits: List<Hit>,
     val status: Int
 )
+
+/* *********************** Text Extractor *********************** */
+@Serializable
+data class Sentence(
+    val text: String,
+    val tokens: List<String>,
+    @SerialName("pos_tags")
+    val posTags: List<String>)
+
+/* *************************************************************** */
