@@ -82,6 +82,7 @@ suspend fun indexFolder(client: SearchClient, directoryPath: String, indexConfig
 }
 
 suspend fun index(directoryPath: String, config: IndexConfig) {
+    println("Indexing...")
     val client = getClient()
     indexFolder(client, directoryPath, config)
 }
