@@ -35,7 +35,7 @@ private object ElasticSearch {
                 println("Index $indexName does not exist. Creating...")
                 client.createIndex(indexName) {
                     settings {
-                        replicas = 1
+                        replicas = 0
                         shards = 1
                         refreshInterval = 10.seconds
                     }
@@ -43,7 +43,15 @@ private object ElasticSearch {
                         keyword("file_path")
                         number<Int>("university_id")
                         keyword("category")
-                        text("data")
+                        text("text")
+                        objField("data") {
+                            keyword("url")
+                            objField("sentences") {
+                                text("text")
+                                text("tokens")
+                                text("pos_tags")
+                            }
+                        }
                         number<Long>("upload_time")
                         keyword("url")
                         bool("private")
